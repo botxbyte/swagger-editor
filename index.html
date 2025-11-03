@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <title>Swagger UI</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        #sidebar {
+            width: 25%;
+            min-width: 300px;
+            background: #1f2937;
+            color: #e5e7eb;
+            overflow-y: auto;
+            border-right: 2px solid #374151;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar-header {
+            padding: 20px;
+            background: #111827;
+            border-bottom: 2px solid #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #sidebar-header h2 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #60a5fa;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .control-button {
+            flex: 1;
+            padding: 8px 12px;
+            background: #374151;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .control-button:hover {
+            background: #4b5563;
+            border-color: #60a5fa;
+        }
+        #endpoints-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        #endpoints-table th {
+            background: #111827;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #9ca3af;
+            position: sticky;
+            top: 105px;
+            z-index: 5;
+            border-bottom: 1px solid #374151;
+        }
+        #endpoints-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #374151;
+        }
+        .endpoint-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .endpoint-row.tag-group-even {
+            background: #1f2937;
+        }
+        .endpoint-row.tag-group-odd {
+            background: #151b24;
+        }
+        .endpoint-row:hover {
+            background: #374151 !important;
+        }
+        .endpoint-row.active {
+            background: #1e3a5f !important;
+        }
+        .method-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            min-width: 50px;
+            text-align: center;
+            font-family: sans-serif;
+        }
+        .method-get { background: #059669; color: white; }
+        .method-post { background: #2563eb; color: white; }
+        .method-put { background: #d97706; color: white; }
+        .method-delete { background: #dc2626; color: white; }
+        .method-patch { background: #7c3aed; color: white; }
+        .endpoint-path {
+            color: #e5e7eb;
+            font-size: 12px;
+            word-break: break-word;
+        }
+        .tag-name {
+            color: #60a5fa;
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: capitalize;
+        }
+        #swagger-ui {
+            width: 50%;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        #editor-panel {
+            width: 25%;
+            min-width: 300px;
+            background: #1f2937;
+            color: #e5e7eb;
+            border-left: 2px solid #374151;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #editor-header {
+            padding: 20px;
+            background: #111827;
+            border-bottom: 2px solid #374151;
+        }
+        #editor-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #60a5fa;
+        }
+        #error-indicator {
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            display: none;
+            background: #991b1b;
+            color: #fecaca;
+            border: 1px solid #dc2626;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #error-indicator:hover {
+            background: #7f1d1d;
+            border-color: #b91c1c;
+        }
+        #error-indicator.visible {
+            display: block;
+        }
+        body.light-theme #error-indicator {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        body.light-theme #error-indicator:hover {
+            background: #fecaca;
+            border-color: #ef4444;
+        }
+        #editor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        #line-numbers {
+            background: #0d1117;
+            color: #6b7280;
+            padding: 20px 10px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: right;
+            user-select: none;
+            overflow: hidden;
+            border-right: 1px solid #374151;
+            min-width: 60px;
+            max-width: 60px;
+            white-space: pre;
+            flex-shrink: 0;
+        }
+        #editor-textarea {
+            flex: 1;
+            background: #111827;
+            color: #e5e7eb;
+            border: none;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+        .editor-button {
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .editor-button:hover {
+            background: #1e40af;
+        }
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        /* Dark theme for Swagger UI */
+        #swagger-ui {
+            background: #111827 !important;
+        }
+        .swagger-ui {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .wrapper {
+            background: #111827 !important;
+        }
+        .swagger-ui .information-container {
+            background: #1f2937 !important;
+        }
+        .swagger-ui .info {
+            background: #1f2937 !important;
+        }
+        .swagger-ui .info .title,
+        .swagger-ui .info .title small,
+        .swagger-ui .info .title small pre {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .opblock-tag-section {
+            background: #111827 !important;
+        }
+        .swagger-ui .opblock-tag {
+            background: #1f2937 !important;
+            border-bottom: 1px solid #374151 !important;
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .opblock {
+            background: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            margin-bottom: 10px;
+        }
+        .swagger-ui .opblock .opblock-summary {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+        .swagger-ui .opblock-summary-path,
+        .swagger-ui .opblock-summary-description {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .opblock .opblock-summary:hover {
+            background: #374151 !important;
+        }
+        .swagger-ui .opblock-body {
+            background: #111827 !important;
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .opblock-description-wrapper,
+        .swagger-ui .opblock-description,
+        .swagger-ui .opblock-description-wrapper p {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .opblock .opblock-section-header {
+            background: #1f2937 !important;
+            box-shadow: none !important;
+        }
+        .swagger-ui .opblock .opblock-section-header h4 {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .parameters-col_description,
+        .swagger-ui .parameter__name,
+        .swagger-ui .parameter__type,
+        .swagger-ui .parameter__in {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui table thead tr th,
+        .swagger-ui table thead tr td {
+            background: #1f2937 !important;
+            color: #e5e7eb !important;
+            border-bottom: 1px solid #374151 !important;
+        }
+        .swagger-ui table tbody tr td {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .response-col_status,
+        .swagger-ui .response-col_description {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .responses-inner h4,
+        .swagger-ui .responses-inner h5 {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .model-box,
+        .swagger-ui .model {
+            background: #1f2937 !important;
+            color: #e5e7eb !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+        }
+        .swagger-ui section.models {
+            background: transparent !important;
+            border: none !important;
+        }
+        .swagger-ui section.models h4 {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .model-container {
+            background: transparent !important;
+        }
+        .swagger-ui .json-schema-2020-12 {
+            background: #1f2937 !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+            margin-bottom: 12px !important;
+        }
+        .swagger-ui .json-schema-2020-12-head {
+            background: transparent !important;
+        }
+        .swagger-ui .json-schema-2020-12-body {
+            background: transparent !important;
+        }
+        .swagger-ui .json-schema-2020-12--embedded {
+            background: transparent !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        .swagger-ui .json-schema-2020-12-property {
+            margin-top: 4px !important;
+            margin-bottom: 4px !important;
+        }
+        .swagger-ui input[type=text],
+        .swagger-ui textarea,
+        .swagger-ui select {
+            background: #0d1117 !important;
+            color: #e5e7eb !important;
+            border: 1px solid #374151 !important;
+        }
+        .swagger-ui .btn {
+            background: #374151 !important;
+            color: #e5e7eb !important;
+            border: 1px solid #4b5563 !important;
+            padding: 8px 16px !important;
+            font-size: 13px !important;
+        }
+        .swagger-ui .btn:hover {
+            background: #4b5563 !important;
+        }
+        .swagger-ui .btn.execute {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+            color: white !important;
+        }
+        .swagger-ui .btn.execute:hover {
+            background: #1e40af !important;
+        }
+        .swagger-ui .btn-clear {
+            background: transparent !important;
+            border: 1px solid #4b5563 !important;
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .btn-clear:hover {
+            background: #374151 !important;
+        }
+        .swagger-ui .renderedMarkdown p,
+        .swagger-ui .renderedMarkdown code,
+        .swagger-ui .renderedMarkdown {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui pre,
+        .swagger-ui .highlight-code pre {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .tab li {
+            color: #9ca3af !important;
+        }
+        .swagger-ui .tab li.active {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .json-schema-2020-12-head {
+            background: #1f2937 !important;
+        }
+        .swagger-ui .json-schema-2020-12__title {
+            color: #e5e7eb !important;
+        }
+        .swagger-ui .json-schema-2020-12-keyword__value,
+        .swagger-ui .json-schema-2020-12-keyword__name,
+        .swagger-ui .json-schema-2020-12 code,
+        .swagger-ui .json-schema-2020-12 .microlight,
+        .swagger-ui .json-schema-2020-12-json-viewer__name,
+        .swagger-ui .json-schema-2020-12-json-viewer__value {
+            color: #e5e7eb !important;
+        }
+        
+        /* Light theme - change text and background colors */
+        body.light-theme .swagger-ui,
+        body.light-theme .swagger-ui .info .title,
+        body.light-theme .swagger-ui .info .title small,
+        body.light-theme .swagger-ui .info .title small pre,
+        body.light-theme .swagger-ui .opblock-tag,
+        body.light-theme .swagger-ui .opblock-summary-path,
+        body.light-theme .swagger-ui .opblock-summary-description,
+        body.light-theme .swagger-ui .opblock-body,
+        body.light-theme .swagger-ui .opblock-description-wrapper,
+        body.light-theme .swagger-ui .opblock-description,
+        body.light-theme .swagger-ui .opblock-description-wrapper p,
+        body.light-theme .swagger-ui .opblock .opblock-section-header h4,
+        body.light-theme .swagger-ui .parameters-col_description,
+        body.light-theme .swagger-ui .parameters-col_name,
+        body.light-theme .swagger-ui .parameter__name,
+        body.light-theme .swagger-ui .parameter__type,
+        body.light-theme .swagger-ui .parameter__in,
+        body.light-theme .swagger-ui .parameter__deprecated,
+        body.light-theme .swagger-ui .renderedMarkdown,
+        body.light-theme .swagger-ui .renderedMarkdown p,
+        body.light-theme .swagger-ui .renderedMarkdown i,
+        body.light-theme .swagger-ui table thead tr th,
+        body.light-theme .swagger-ui table thead tr td,
+        body.light-theme .swagger-ui table tbody tr td,
+        body.light-theme .swagger-ui .col_header,
+        body.light-theme .swagger-ui .response-col_status,
+        body.light-theme .swagger-ui .response-col_description,
+        body.light-theme .swagger-ui .responses-inner h4,
+        body.light-theme .swagger-ui .responses-inner h5,
+        body.light-theme .swagger-ui .model-box,
+        body.light-theme .swagger-ui .model,
+        body.light-theme .swagger-ui section.models h4,
+        body.light-theme .swagger-ui .model-title,
+        body.light-theme .swagger-ui .property-row,
+        body.light-theme .swagger-ui .prop-type,
+        body.light-theme .swagger-ui .prop-format {
+            color: #1f2937 !important;
+        }
+        
+        /* Light theme backgrounds - Swagger UI */
+        body.light-theme #swagger-ui {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .wrapper {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .scheme-container {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .information-container {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .info {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .info .title {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .opblock-tag-section {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .opblock-tag {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .swagger-ui .opblock {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .swagger-ui .opblock .opblock-summary {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+        body.light-theme .swagger-ui .opblock .opblock-summary:hover {
+            background: #f1f5f9 !important;
+        }
+        body.light-theme .swagger-ui .opblock.active {
+            background: #f1f5f9 !important;
+        }
+        body.light-theme .swagger-ui .opblock-body {
+            background: #ffffff !important;
+        }
+        body.light-theme .swagger-ui .opblock .opblock-section-header {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            box-shadow: none !important;
+        }
+        body.light-theme .swagger-ui table thead tr th,
+        body.light-theme .swagger-ui table thead tr td {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        body.light-theme .swagger-ui .model-box,
+        body.light-theme .swagger-ui .model {
+            background: #f3f4f6 !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+        }
+        body.light-theme .swagger-ui section.models {
+            background: transparent !important;
+            border: none !important;
+        }
+        body.light-theme .swagger-ui .model-container {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12 {
+            background: #f3f4f6 !important;
+            padding: 16px !important;
+            border-radius: 8px !important;
+            margin-bottom: 12px !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12-head {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12-body {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12--embedded {
+            background: transparent !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        body.light-theme .swagger-ui .model-example {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12-property {
+            margin-top: 4px !important;
+            margin-bottom: 4px !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12__title,
+        body.light-theme .swagger-ui .json-schema-2020-12__attribute,
+        body.light-theme .swagger-ui .json-schema-2020-12__constraint,
+        body.light-theme .swagger-ui .json-schema-2020-12-keyword__name,
+        body.light-theme .swagger-ui .json-schema-2020-12-core-keyword__value,
+        body.light-theme .swagger-ui .json-schema-2020-12-keyword,
+        body.light-theme .swagger-ui .json-schema-2020-12-json-viewer__name,
+        body.light-theme .swagger-ui .json-schema-2020-12-json-viewer__value {
+            color: #1f2937 !important;
+        }
+        body.light-theme .swagger-ui input[type=text],
+        body.light-theme .swagger-ui textarea,
+        body.light-theme .swagger-ui select {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        body.light-theme .swagger-ui .btn {
+            background: #f3f4f6 !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db !important;
+            padding: 8px 16px !important;
+            font-size: 13px !important;
+        }
+        body.light-theme .swagger-ui .btn:hover {
+            background: #e5e7eb !important;
+        }
+        body.light-theme .swagger-ui .btn.execute {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+            color: white !important;
+        }
+        body.light-theme .swagger-ui .btn.execute:hover {
+            background: #1e40af !important;
+        }
+        body.light-theme .swagger-ui .btn-clear {
+            background: transparent !important;
+            border: 1px solid #d1d5db !important;
+            color: #374151 !important;
+        }
+        body.light-theme .swagger-ui .btn-clear:hover {
+            background: #f9fafb !important;
+        }
+        
+        /* Light theme code examples */
+        body.light-theme .swagger-ui pre.example,
+        body.light-theme .swagger-ui pre.microlight,
+        body.light-theme .swagger-ui .highlight-code pre {
+            background: #f8fafc !important;
+            color: #1f2937 !important;
+        }
+        body.light-theme .swagger-ui .microlight code,
+        body.light-theme .swagger-ui pre code {
+            color: #1f2937 !important;
+        }
+        body.light-theme .swagger-ui code .hljs-attr {
+            color: #0369a1 !important;
+        }
+        body.light-theme .swagger-ui code span[style*="color: rgb(252, 194, 140)"] {
+            color: #ea580c !important;
+        }
+        body.light-theme .swagger-ui code span[style*="color: rgb(162, 252, 162)"] {
+            color: #15803d !important;
+        }
+        body.light-theme .swagger-ui code span[style*="color: rgb(211, 99, 99)"] {
+            color: #c2410c !important;
+        }
+        
+        /* Distinguish prop-type from description - Light theme */
+        body.light-theme .swagger-ui .prop-type {
+            color: #2563eb !important;
+            font-weight: 600 !important;
+        }
+        body.light-theme .swagger-ui .prop .renderedMarkdown,
+        body.light-theme .swagger-ui .prop .renderedMarkdown p {
+            color: #6b7280 !important;
+            font-weight: 400 !important;
+            margin-top: 4px !important;
+        }
+        
+        /* Style model toggle buttons - Light theme */
+        body.light-theme .swagger-ui .model-toggle {
+            border-left-color: #2563eb !important;
+        }
+        body.light-theme .swagger-ui .model-toggle.collapsed {
+            border-left-color: transparent !important;
+            border-top-color: #2563eb !important;
+        }
+        
+        /* Light theme tab buttons */
+        body.light-theme .swagger-ui .tab li button,
+        body.light-theme .swagger-ui .tabitem button,
+        body.light-theme .swagger-ui .tablinks {
+            color: #1f2937 !important;
+        }
+        body.light-theme .swagger-ui .tab li.active button,
+        body.light-theme .swagger-ui .tabitem.active button {
+            color: #0c4a6e !important;
+            font-weight: 600;
+        }
+        
+        /* Light theme sidebar backgrounds */
+        body.light-theme #sidebar {
+            background: #ffffff;
+            color: #1f2937;
+            border-right: 2px solid #e5e7eb;
+        }
+        body.light-theme #editor-panel {
+            background: #ffffff;
+            color: #1f2937;
+            border-left: 2px solid #e5e7eb;
+        }
+        body.light-theme #editor-header {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        body.light-theme #editor-header h2 {
+            color: #1e40af;
+        }
+        body.light-theme #editor-textarea {
+            background: #ffffff;
+            color: #1f2937;
+        }
+        body.light-theme #line-numbers {
+            background: #f8fafc;
+            color: #9ca3af;
+            border-right: 1px solid #e2e8f0;
+        }
+        body.light-theme #sidebar-header {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        body.light-theme #sidebar-header h2 {
+            color: #1e40af;
+        }
+        body.light-theme .control-button {
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        body.light-theme .control-button:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        body.light-theme #endpoints-table th {
+            background: #f8fafc;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        body.light-theme #endpoints-table td {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        body.light-theme .endpoint-row.tag-group-even {
+            background: #ffffff;
+        }
+        body.light-theme .endpoint-row.tag-group-odd {
+            background: #fafbfc;
+        }
+        body.light-theme .endpoint-row:hover {
+            background: #f0f9ff !important;
+        }
+        body.light-theme .endpoint-row.active {
+            background: #dbeafe !important;
+            border-left: 3px solid #3b82f6;
+        }
+        body.light-theme .endpoint-path {
+            color: #1f2937;
+        }
+        body.light-theme .tag-name {
+            color: #3b82f6;
+        }
+        body.light-theme #sidebar::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        body.light-theme #sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        body.light-theme #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Schema property name and description font sizes */
+        .swagger-ui .json-schema-2020-12__title {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+        .swagger-ui .json-schema-2020-12-keyword--description .json-schema-2020-12-core-keyword__value,
+        .swagger-ui .json-schema-2020-12-keyword--description .renderedMarkdown {
+            font-size: 13px !important;
+            padding-left: 10px;
+        }
+        
+        /* Smart model font sizing */
+        .swagger-ui .model {
+            font-size: 16px !important;
+        }
+        .swagger-ui .model .property {
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+        .swagger-ui .model .prop-name,
+        .swagger-ui .model .prop-type,
+        .swagger-ui .model .prop-format {
+            font-size: 15px !important;
+        }
+        .swagger-ui .model-title {
+            font-size: 18px !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Distinguish prop-type from description - Dark theme */
+        .swagger-ui .prop-type {
+            color: #60a5fa !important;
+            font-weight: 600 !important;
+        }
+        .swagger-ui .prop .renderedMarkdown,
+        .swagger-ui .prop .renderedMarkdown p {
+            color: #9ca3af !important;
+            font-weight: 400 !important;
+            margin-top: 4px !important;
+        }
+        
+        /* Style model toggle buttons */
+        .swagger-ui .model-box-control {
+            cursor: pointer !important;
+            padding: 4px 8px !important;
+            margin: 2px 0 !important;
+        }
+        .swagger-ui .model-toggle {
+            display: inline-block !important;
+            width: 0 !important;
+            height: 0 !important;
+            border-left: 6px solid #60a5fa !important;
+            border-top: 6px solid transparent !important;
+            border-bottom: 6px solid transparent !important;
+            transition: transform 0.2s !important;
+        }
+        .swagger-ui .model-toggle.collapsed {
+            border-left: 6px solid transparent !important;
+            border-top: 6px solid #60a5fa !important;
+            border-right: 6px solid transparent !important;
+            border-bottom: 6px solid transparent !important;
+        }
+        
+        /* Hide arrows for nested property rows - only show for main model title */
+        .swagger-ui .property-row .model-box-control .model-toggle {
+            display: none !important;
+        }
+        
+        /* Live responses table styling - dark theme */
+        .swagger-ui .live-responses-table {
+            background: #0d1f2d !important;
+            border: 1px solid #2c5282 !important;
+            border-radius: 8px !important;
+            padding: 16px !important;
+            overflow: hidden !important;
+        }
+        .swagger-ui .live-responses-table tbody tr td {
+            padding: 10px 12px !important;
+        }
+        .swagger-ui .live-responses-table tbody tr:first-child td {
+            border-top: none !important;
+        }
+        
+        /* Live responses table styling - light theme */
+        body.light-theme .swagger-ui .live-responses-table {
+            background: #eff6ff !important;
+            border: 1px solid #93c5fd !important;
+            border-radius: 8px !important;
+            padding: 16px !important;
+            overflow: hidden !important;
+        }
+        body.light-theme .swagger-ui .live-responses-table tbody tr td {
+            padding: 10px 12px !important;
+        }
+        body.light-theme .swagger-ui .live-responses-table tbody tr:first-child td {
+            border-top: none !important;
+        }
+        
+        /* Remove background from schema accordion buttons */
+        .swagger-ui .json-schema-2020-12-accordion {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12-accordion {
+            background: transparent !important;
+        }
+        .swagger-ui .json-schema-2020-12-expand-deep-button {
+            background: transparent !important;
+        }
+        body.light-theme .swagger-ui .json-schema-2020-12-expand-deep-button {
+            background: transparent !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <h2>API Endpoints</h2>
+            <div class="button-group">
+                <button class="control-button" onclick="toggleTheme()">Toggle Theme</button>
+                <button class="control-button" onclick="collapseAll()">Collapse All</button>
+            </div>
+        </div>
+        <table id="endpoints-table">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Tag</th>
+                </tr>
+            </thead>
+            <tbody id="endpoints-body">
+                <!-- Populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    <div id="swagger-ui"></div>
+    <div id="editor-panel">
+        <div id="editor-header">
+            <h2>OpenAPI Editor (YAML)</h2>
+            <div id="error-indicator" onclick="jumpToErrorLine()"></div>
+        </div>
+        <div id="editor-container">
+            <div id="line-numbers"></div>
+            <textarea id="editor-textarea" placeholder="Loading OpenAPI spec..."></textarea>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-parser@6.0.1/dist/swagger-parser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('swagger-theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+        }
+        
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('swagger-theme', isLight ? 'light' : 'dark');
+        }
+
+        let currentSpec = null;
+        
+        let swaggerUI;
+        
+        fetch('/openapi.json')
+            .then(response => response.json())
+            .then(spec => {
+                currentSpec = spec;
+                
+                swaggerUI = SwaggerUIBundle({
+                    spec: spec,
+                    dom_id: '#swagger-ui',
+                    presets: [
+                        SwaggerUIBundle.presets.apis,
+                        SwaggerUIBundle.SwaggerUIStandalonePreset
+                    ],
+                    layout: "BaseLayout",
+                    deepLinking: true,
+                    showExtensions: true,
+                    showCommonExtensions: true,
+                    defaultModelsExpandDepth: 1,
+                    defaultModelExpandDepth: 1
+                });
+                
+                // Load spec into editor as YAML
+                const yamlContent = jsyaml.dump(spec, { indent: 2, lineWidth: 120 });
+                document.getElementById('editor-textarea').value = yamlContent;
+                updateLineNumbers();
+
+                populateSidebar(spec);
+            });
+        
+        function populateSidebar(spec) {
+            const tbody = document.getElementById('endpoints-body');
+            const endpoints = [];
+            
+
+            for (const [path, methods] of Object.entries(spec.paths)) {
+                for (const [method, details] of Object.entries(methods)) {
+                    if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
+                        endpoints.push({
+                            method: method.toUpperCase(),
+                            path: path,
+                            tag: details.tags?.[0] || 'default',
+                            operationId: details.operationId,
+                            summary: details.summary || ''
+                        });
+                    }
+                }
+            }
+            
+
+            endpoints.sort((a, b) => {
+                if (a.tag !== b.tag) return a.tag.localeCompare(b.tag);
+                return a.path.localeCompare(b.path);
+            });
+            
+            // Render table rows with tag-based striping
+            let currentTag = null;
+            let tagGroupIndex = 0;
+            
+            endpoints.forEach((endpoint, index) => {
+                const row = document.createElement('tr');
+                
+                // Check if tag changed for striping
+                if (currentTag !== endpoint.tag) {
+                    currentTag = endpoint.tag;
+                    tagGroupIndex++;
+                }
+                
+                row.className = `endpoint-row tag-group-${tagGroupIndex % 2 === 0 ? 'even' : 'odd'}`;
+                // Format tag to match Swagger UI (replace spaces with underscores)
+                const formattedTag = endpoint.tag.replace(/\s+/g, '_');
+                const opId = endpoint.operationId || `${endpoint.method.toLowerCase()}_${endpoint.path.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                row.dataset.operationId = `operations-${formattedTag}-${opId}`;
+                row.title = endpoint.summary;
+                
+                row.innerHTML = `
+                    <td><span class="method-badge method-${endpoint.method.toLowerCase()}">${endpoint.method}</span></td>
+                    <td><span class="endpoint-path">${endpoint.path}</span></td>
+                    <td><span class="tag-name">${endpoint.tag}</span></td>
+                `;
+                
+                row.onclick = () => scrollToEndpoint(row.dataset.operationId, row);
+                tbody.appendChild(row);
+            });
+        }
+        
+        function scrollToEndpoint(operationId, rowElement) {
+            // Remove active class from all rows
+            document.querySelectorAll('.endpoint-row').forEach(r => r.classList.remove('active'));
+            // Add active class to clicked row
+            rowElement.classList.add('active');
+            
+            // Find and scroll to the operation in Swagger UI
+            setTimeout(() => {
+                let element = document.getElementById(operationId);
+                
+                // If not found by ID, try to find by data-operation-id attribute
+                if (!element) {
+                    element = document.querySelector(`[data-operation-id="${operationId}"]`);
+                }
+                
+                // Also try variations of the operationId
+                if (!element) {
+                    const variations = [
+                        operationId,
+                        operationId.replace('operations-', ''),
+                        `operations/${operationId.split('-')[1]}/${operationId.split('-').slice(2).join('-')}`
+                    ];
+                    
+                    for (const variant of variations) {
+                        element = document.getElementById(variant) || 
+                                 document.querySelector(`[id*="${variant}"]`);
+                        if (element) break;
+                    }
+                }
+                
+                if (element) {
+                    // Get the swagger-ui container for scrolling
+                    const swaggerContainer = document.getElementById('swagger-ui');
+                    
+                    // Find the opblock container
+                    const opblock = element.closest('.opblock') || element.querySelector('.opblock');
+                    
+                    if (opblock) {
+                        // Check if it needs to be expanded
+                        if (!opblock.classList.contains('is-open')) {
+                            const control = opblock.querySelector('.opblock-summary-control') || 
+                                           opblock.querySelector('.opblock-summary');
+                            if (control) {
+                                control.click();
+                                // Wait for expand animation before scrolling
+                                setTimeout(() => {
+                                    // Calculate position relative to swagger container
+                                    const rect = opblock.getBoundingClientRect();
+                                    const containerRect = swaggerContainer.getBoundingClientRect();
+                                    swaggerContainer.scrollTop += rect.top - containerRect.top - 20;
+                                }, 150);
+                                return;
+                            }
+                        }
+                        // If already open, just scroll
+                        const rect = opblock.getBoundingClientRect();
+                        const containerRect = swaggerContainer.getBoundingClientRect();
+                        swaggerContainer.scrollTop += rect.top - containerRect.top - 20;
+                    } else {
+                        // Fallback: scroll to element directly in swagger container
+                        const rect = element.getBoundingClientRect();
+                        const containerRect = swaggerContainer.getBoundingClientRect();
+                        swaggerContainer.scrollTop += rect.top - containerRect.top - 20;
+                    }
+                } else {
+                    console.warn('Could not find operation:', operationId);
+                }
+            }, 200);
+        }
+        
+        function updateLineNumbers() {
+            const textarea = document.getElementById('editor-textarea');
+            const lineNumbersDiv = document.getElementById('line-numbers');
+            const lines = textarea.value.split('\n');
+            const lineCount = lines.length;
+            
+            let lineNumbersContent = '';
+            for (let i = 1; i <= lineCount; i++) {
+                lineNumbersContent += i + '\n';
+            }
+            lineNumbersDiv.textContent = lineNumbersContent;
+            
+            // Sync scroll
+            lineNumbersDiv.scrollTop = textarea.scrollTop;
+        }
+        
+        let updateTimeout = null;
+        let lastValidSpec = null;
+        let currentErrorLine = null;
+        
+        function showError(message, lineNumber = null) {
+            const errorIndicator = document.getElementById('error-indicator');
+            currentErrorLine = lineNumber;
+            
+            // Try to extract line number from error message if not provided
+            if (!lineNumber) {
+                const lineMatch = message.match(/line (\d+)/i);
+                if (lineMatch) {
+                    currentErrorLine = parseInt(lineMatch[1]);
+                }
+            }
+            
+            // Format error message with line number if available
+            if (currentErrorLine) {
+                errorIndicator.innerHTML = `⚠ <strong>Line ${currentErrorLine}:</strong> ${message.replace(/at line \d+/i, '').trim()}`;
+                errorIndicator.title = 'Click to jump to error line';
+            } else {
+                errorIndicator.textContent = '⚠ ' + message;
+                errorIndicator.title = '';
+            }
+            
+            errorIndicator.classList.add('visible');
+        }
+        
+        function hideError() {
+            const errorIndicator = document.getElementById('error-indicator');
+            errorIndicator.classList.remove('visible');
+            currentErrorLine = null;
+        }
+        
+        function jumpToErrorLine() {
+            if (!currentErrorLine) return;
+            
+            const textarea = document.getElementById('editor-textarea');
+            const lines = textarea.value.split('\n');
+            
+            // Calculate character position of the error line
+            let charPosition = 0;
+            for (let i = 0; i < currentErrorLine - 1 && i < lines.length; i++) {
+                charPosition += lines[i].length + 1; // +1 for newline
+            }
+            
+            // Set cursor position and scroll to line
+            textarea.focus();
+            textarea.setSelectionRange(charPosition, charPosition + (lines[currentErrorLine - 1]?.length || 0));
+            
+            // Scroll the line into view
+            const lineHeight = 1.6 * 13; // line-height * font-size
+            const lineOffset = (currentErrorLine - 1) * lineHeight;
+            textarea.scrollTop = Math.max(0, lineOffset - textarea.clientHeight / 2);
+            
+            // Also sync line numbers scroll
+            document.getElementById('line-numbers').scrollTop = textarea.scrollTop;
+        }
+        
+        function findLineNumberForPath(yamlText, path) {
+            // Try to find the line number for a given JSON path
+            // path example: "components.schemas.OrderInput.properties.userId"
+            if (!path) return null;
+            
+            const lines = yamlText.split('\n');
+            const pathParts = path.split('.');
+            
+            // Look for the last meaningful part of the path
+            for (let i = pathParts.length - 1; i >= 0; i--) {
+                const searchTerm = pathParts[i];
+                if (!searchTerm) continue;
+                
+                // Search for this term in YAML
+                for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+                    const line = lines[lineNum];
+                    // Look for "term:" or "- term" patterns
+                    if (line.match(new RegExp(`^\\s*${searchTerm}\\s*:`, 'i')) ||
+                        line.match(new RegExp(`^\\s*-\\s*${searchTerm}`, 'i'))) {
+                        return lineNum + 1;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        async function validateOpenAPISpec(spec, yamlText) {
+            try {
+                // Use swagger-parser for full validation
+                await SwaggerParser.validate(spec);
+                return []; // No errors
+            } catch (err) {
+                // Return validation errors with line numbers
+                const errors = [];
+                if (err.details) {
+                    // Multiple validation errors
+                    err.details.forEach(detail => {
+                        const path = detail.path?.join('.') || '';
+                        const lineNumber = findLineNumberForPath(yamlText, path);
+                        errors.push({
+                            message: detail.message || detail.toString(),
+                            line: lineNumber,
+                            path: path
+                        });
+                    });
+                } else {
+                    // Single error - try to extract path from message
+                    const path = err.path?.join('.') || '';
+                    const lineNumber = findLineNumberForPath(yamlText, path);
+                    errors.push({
+                        message: err.message || err.toString(),
+                        line: lineNumber,
+                        path: path
+                    });
+                }
+                return errors;
+            }
+        }
+        
+        async function updateSpec() {
+            try {
+                const editorText = document.getElementById('editor-textarea').value;
+                const newSpec = jsyaml.load(editorText);
+                
+                // Validate the OpenAPI spec
+                const validationErrors = await validateOpenAPISpec(newSpec, editorText);
+                
+                if (validationErrors.length > 0) {
+                    // Show first validation error with line number
+                    const firstError = validationErrors[0];
+                    showError(firstError.message, firstError.line);
+                    console.error('OpenAPI validation errors:', validationErrors);
+                    // Still update UI even with errors so user can see the spec
+                }
+                
+                // Update spec
+                lastValidSpec = newSpec;
+                currentSpec = newSpec;
+                
+                // Clear errors if validation passed
+                if (validationErrors.length === 0) {
+                    hideError();
+                }
+                
+                // Update Swagger UI
+                swaggerUI = SwaggerUIBundle({
+                    spec: newSpec,
+                    dom_id: '#swagger-ui',
+                    presets: [
+                        SwaggerUIBundle.presets.apis,
+                        SwaggerUIBundle.SwaggerUIStandalonePreset
+                    ],
+                    layout: "BaseLayout",
+                    deepLinking: true,
+                    showExtensions: true,
+                    showCommonExtensions: true,
+                    defaultModelsExpandDepth: 1,
+                    defaultModelExpandDepth: 1
+                });
+                
+                // Update sidebar
+                document.getElementById('endpoints-body').innerHTML = '';
+                populateSidebar(newSpec);
+                
+                // Reinitialize deep toggle
+                setTimeout(() => setupDeepToggle(), 1000);
+            } catch (error) {
+                // Show YAML parse error with line number if available
+                let lineNumber = null;
+                if (error.mark && error.mark.line !== undefined) {
+                    lineNumber = error.mark.line + 1; // js-yaml uses 0-based line numbers
+                }
+                showError(error.message, lineNumber);
+                console.log('YAML parse error:', error);
+            }
+        }
+        
+        // Update line numbers on input and scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('editor-textarea');
+            const lineNumbers = document.getElementById('line-numbers');
+            
+            if (textarea) {
+                // Update line numbers immediately on input
+                textarea.addEventListener('input', function() {
+                    updateLineNumbers();
+                    
+                    // Debounce the spec update to avoid too many updates while typing
+                    clearTimeout(updateTimeout);
+                    updateTimeout = setTimeout(() => {
+                        updateSpec();
+                    }, 1000); // Wait 1 second after user stops typing
+                });
+                
+                textarea.addEventListener('scroll', function() {
+                    lineNumbers.scrollTop = textarea.scrollTop;
+                });
+            }
+        });
+        
+        function collapseAll() {
+            setTimeout(() => {
+                const openOps = document.querySelectorAll('.opblock.is-open');
+                console.log('Collapsing', openOps.length, 'operations');
+                openOps.forEach((opblock, index) => {
+                    setTimeout(() => {
+                        const summary = opblock.querySelector('.opblock-summary-control');
+                        if (summary) {
+                            summary.click();
+                        }
+                    }, index * 10);
+                });
+            }, 200);
+        }
+        
+        // Add deep expand functionality - simpler approach
+        function setupDeepToggle() {
+            setTimeout(() => {
+                console.log('Setting up deep toggle...');
+                
+                document.addEventListener('click', function(e) {
+                    const button = e.target.closest('.model-box-control');
+                    if (!button) return;
+                    
+                    // Only handle clicks on main model titles (not property rows)
+                    if (button.closest('.property-row')) {
+                        console.log('Ignoring property row click');
+                        return;
+                    }
+                    
+                    const toggle = button.querySelector('.model-toggle');
+                    if (!toggle) return;
+                    
+                    // Check if it's currently collapsed
+                    const isCollapsed = toggle.classList.contains('collapsed');
+                    console.log('Button clicked, isCollapsed:', isCollapsed);
+                    
+                    if (isCollapsed) {
+                        // Store button info before it might get detached
+                        const buttonId = 'deep-expand-' + Math.random();
+                        button.setAttribute('data-deep-expand-id', buttonId);
+                        
+                        // Wait for Swagger UI to expand the model naturally
+                        setTimeout(() => {
+                            // Re-find the button by ID
+                            const btn = document.querySelector(`[data-deep-expand-id="${buttonId}"]`);
+                            if (!btn) {
+                                console.log('Button no longer in DOM');
+                                return;
+                            }
+                            
+                            console.log('Found button after expansion:', btn);
+                            console.log('Button parent:', btn.parentElement);
+                            
+                            // Search in parent or wider scope
+                            let searchContainer = btn.parentElement;
+                            if (!searchContainer) {
+                                // Try finding by going up from document
+                                console.log('No parent, searching entire schemas section');
+                                searchContainer = document.querySelector('.models') || document.querySelector('#swagger-ui');
+                            }
+                            
+                            console.log('Search container:', searchContainer.className || searchContainer.tagName);
+                            
+                            // Look for the inner-object table that appears after expansion
+                            // Search from the parent element (which contains the button and expanded content)
+                            let innerObject = searchContainer.querySelector('.inner-object');
+                            
+                            if (!innerObject) {
+                                console.log('No inner-object found, trying alternate selector...');
+                                // Try finding property rows directly from parent
+                                innerObject = searchContainer;
+                            }
+                            
+                            console.log('Looking for property rows...');
+                            
+                            // Find buttons within property rows (the nested properties)
+                            const propertyRows = innerObject.querySelectorAll('.property-row');
+                            console.log('Found', propertyRows.length, 'property rows');
+                            
+                            if (propertyRows.length === 0) {
+                                console.log('No property rows found. Schema structure:');
+                                console.log(modelContainer);
+                                return;
+                            }
+                            
+                            let clickCount = 0;
+                            propertyRows.forEach((row, index) => {
+                                const btn = row.querySelector('.model-box-control');
+                                if (!btn) {
+                                    console.log('No button in row', index);
+                                    return;
+                                }
+                                
+                                // Check if button has collapsed content (look for [...] or collapsed toggle)
+                                const hasCollapsedContent = btn.textContent.includes('[...]') || btn.textContent.includes('{...}');
+                                const btnToggle = btn.querySelector('.model-toggle');
+                                const isCollapsed = btnToggle && btnToggle.classList.contains('collapsed');
+                                
+                                console.log(`Row ${index}: hasCollapsedContent=${hasCollapsedContent}, isCollapsed=${isCollapsed}, aria-expanded=${btn.getAttribute('aria-expanded')}`);
+                                
+                                if (hasCollapsedContent || isCollapsed || btn.getAttribute('aria-expanded') === 'false') {
+                                    console.log('Will click property row button', index);
+                                    setTimeout(() => {
+                                        btn.click();
+                                    }, clickCount * 100);
+                                    clickCount++;
+                                }
+                            });
+                            
+                            console.log('Total buttons to click:', clickCount);
+                        }, 1000);
+                    }
+                }, true);
+            }, 1500);
+        }
+        
+        // Initialize deep toggle after Swagger UI loads
+        setupDeepToggle();
+        
+    </script>
+</body>
+</html>
